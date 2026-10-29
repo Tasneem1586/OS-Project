@@ -43,22 +43,26 @@ int holding_sleeplock(struct sleeplock *lk)
 //=====================================================================================//
 //============================== REQUIRED FUNCTIONS ===================================//
 //=====================================================================================//
+//TODO: [PROJECT'26.GM#4] BLOCKING - [16] SleepLock acquire_sleeplock
 void acquire_sleeplock(struct sleeplock *lk)
 {
-	//TODO: [PROJECT'26.GM#4] BLOCKING - [16] SleepLock acquire_sleeplock
-	//Your code is here
-	//Comment the following line
+	  acquire_kspinlock(&(lk->lk));
+	  while (lk->locked)
+	    sleep(&(lk->chan), &(lk->lk));
+	  lk->locked = 1;
+	  lk->pid = get_cpu_proc()->env_id;
+	  release_kspinlock(&(lk->lk));
 	panic("acquire_sleeplock() is not implemented yet...!!");
 }
-
+//TODO: [PROJECT'26.GM#4] BLOCKING - [17] SleepLock release_sleeplock
 void release_sleeplock(struct sleeplock *lk)
 {
-	//TODO: [PROJECT'26.GM#4] BLOCKING - [17] SleepLock release_sleeplock
-	//Your code is here
-	//Comment the following line
+	acquire_kspinlock(&(lk->lk));
+	if (!lk->locked || lk->pid != get_cpu_proc()->env_id)
+	        panic("process is locked");
+	lk->locked = 0;
+	lk->pid = 0;0
+	wakeup_all(&(lk->chan));
+	release_kspinlock(&(lk->lk));
 	panic("release_sleeplock() is not implemented yet...!!");
 }
-
-
-
-

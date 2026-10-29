@@ -67,6 +67,7 @@ struct Command commands[] =
 		{"buff", "enable buffering", command_enable_buffering, 0},
 		{"nomodbuff", "disable modified buffer", command_disable_modified_buffer, 0},
 		{"modbuff", "enable modified buffer", command_enable_modified_buffer, 0},
+		{"Allocate","allocate blocks",alloc_block,1},
 		{"modbufflength?", "get modified buffer length", command_get_modified_buffer_length, 0},
 		{"cls", "clear screen", command_cls, 0},
 

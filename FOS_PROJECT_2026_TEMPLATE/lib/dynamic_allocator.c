@@ -54,11 +54,32 @@ __inline__ uint32 get_block_size(void *va)
 //===========================
 // [2] ALLOCATE BLOCK:
 //===========================
+//TODO: [PROJECT'26.GM#1] DYNAMIC ALLOCATOR - [2] alloc_block
 void *alloc_block(uint32 requiredSize)
 {
-	//TODO: [PROJECT'26.GM#1] DYNAMIC ALLOCATOR - [2] alloc_block
-	//Your code is here
-	//Comment the following line
+	if(requiredSize == 0)
+		return NULL;
+    uint32 total_size = requiredSize + sizeof(struct BlockMetaData);
+    struct BlockMetaData *search = NULL ;
+    LIST_FOREACH(search,&freeBlockLists,BlockMetaData)
+    {
+        uint32 block_size = get_block_size((void *)search);
+        if(block_size >= total_size)
+        {
+        	if(block_size > total_size+ sizeof(struct BlockMetaData))
+        	{
+        		struct BlockMetaData *newblock =(struct BlockMetaData)((char*)search + total_size);
+        		newblock->is_free=1;
+        		newblock-> level = block_size-total_size;
+        		LIST_INSERT_AFTER(&freeBlockLists,search,newblock);
+        	}
+        	search->level = total_size;
+        	search->is_free = 0;
+        	LIST_REMOVE(&freeBlockLists,search);
+        	return (void*)(char*)search+sizeof(struct BlockMetaData);
+        }
+        return NULL;
+    }
 	panic("alloc_block() not implemented");
 }
 

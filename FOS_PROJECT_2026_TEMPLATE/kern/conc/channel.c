@@ -35,12 +35,24 @@ void init_channel(struct Channel *chan, char *name)
 //===============================
 // Atomically release lock and sleep on chan.
 // Reacquires lock when awakened.
-// Ref: xv6-x86 OS code
+// Ref: xv6-x86 OS code.
+
+
+//TODO: [PROJECT'26.GM#4] BLOCKING - [13] Channel sleep
 void sleep(struct Channel *chan, struct kspinlock* lk)
 {
-	//TODO: [PROJECT'26.GM#4] BLOCKING - [13] Channel sleep
-	//Your code is here
-	//Comment the following line
+	 struct Env *e = get_cpu_proc();
+	    if (e == NULL)
+	        panic("sleep: no current process");
+	    acquire_kspinlock(&ProcessQueues.qlock);
+	    release_kspinlock(lk);
+	    e->channel = chan;
+	    e->env_status = ENV_BLOCKED;
+	    enqueue(&chan->queue, e);
+	    sched();
+	    e->channel = NULL;
+	    release_kspinlock(&ProcessQueues.qlock);
+	    acquire_kspinlock(lk);
 	panic("sleep() is not implemented yet...!!");
 }
 
@@ -51,11 +63,18 @@ void sleep(struct Channel *chan, struct kspinlock* lk)
 // The qlock must be held.
 // Ref: xv6-x86 OS code
 // chan MUST be of type "struct Env_Queue" to hold the blocked processes
+//TODO: [PROJECT'26.GM#4] BLOCKING - [14] Channel wakeup_one
 void wakeup_one(struct Channel *chan)
 {
-	//TODO: [PROJECT'26.GM#4] BLOCKING - [14] Channel wakeup_one
-	//Your code is here
-	//Comment the following line
+    struct Env *e;
+    acquire_kspinlock(&ProcessQueues.qlock);
+    e = dequeue(&chan->queue);
+    if (e != NULL) {
+        e->channel = NULL;
+        e->env_status = ENV_READY;
+        sched_insert_ready(e);
+    }
+    release_kspinlock(&ProcessQueues.qlock);
 	panic("wakeup_one() is not implemented yet...!!");
 }
 
@@ -66,11 +85,20 @@ void wakeup_one(struct Channel *chan)
 // The queues lock must be held.
 // Ref: xv6-x86 OS code
 // chan MUST be of type "struct Env_Queue" to hold the blocked processes
+//TODO: [PROJECT'26.GM#4] BLOCKING - [15] Channel wakeup_all
+
 void wakeup_all(struct Channel *chan)
 {
-	//TODO: [PROJECT'26.GM#4] BLOCKING - [15] Channel wakeup_all
-	//Your code is here
-	//Comment the following line
+	struct Env *e;
+
+	    acquire_kspinlock(&ProcessQueues.qlock);
+
+	    while ((e = dequeue(&chan->queue)) != NULL) {
+	        e->channel = NULL;
+	        e->env_status = ENV_READY;
+	        sched_insert_ready(e);
+	    }
+
+	    release_kspinlock(&ProcessQueues.qlock);
 	panic("wakeup_all() is not implemented yet...!!");
 }
-
