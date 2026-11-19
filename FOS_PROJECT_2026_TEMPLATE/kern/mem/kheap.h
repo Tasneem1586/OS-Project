@@ -33,6 +33,8 @@ void kheap_init();
 void* kmalloc(unsigned int size);
 void kfree(void* virtual_address);
 void *krealloc(void *virtual_address, unsigned int new_size);
+void* create_buddy_space();
+void  delete_buddy_space(void *va);
 
 unsigned int kheap_virtual_address(unsigned int physical_address);
 unsigned int kheap_physical_address(unsigned int virtual_address);
